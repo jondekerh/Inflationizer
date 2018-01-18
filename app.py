@@ -12,10 +12,11 @@ catList = list(catPrompt)
 
 invPrompt = filedialog.askopenfilename(title = 'now select the inventory file')
 
+#create a blank dataframe with appropriate column names to store data from all the catalog files
 finalCat = pd.DataFrame(columns = ['Item', 'VarRetail'])
 
 #loop to append shortened contents of each selected catalog file into one dataframe (finalCat)
-for index, i in enumerate(catList):
+for i in catList:
   importCat = pd.read_csv(i)
   cat = importCat[['Item', 'Retail']]
   cat.columns = ['Item', 'VarRetail']
@@ -28,9 +29,9 @@ importInv = pd.read_csv(invPrompt)
 inv = importInv[['SKU', 'Retail']]
 
 #make a new dataframe with 3 columns: SKU, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail
-df = pd.merge(inv, finalCat, left_on='SKU', right_on='Item').drop('Item', axis=1)
-df = df.loc[df['Retail'].astype(float) < df['VarRetail'].astype(float)]
+newPrices = pd.merge(inv, finalCat, left_on='SKU', right_on='Item').drop('Item', axis=1)
+newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarRetail'].astype(float)]
 
 #write it
-df.to_csv(path_or_buf = './new_prices.csv')
+newPrices.to_csv(path_or_buf = './new_prices.csv')
 print('new_prices.csv has been created in this file\'s directory!')
