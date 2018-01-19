@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import tkinter as tk
+import os 
 from tkinter import filedialog
 
 #using prompts, make user select proper files
@@ -34,4 +35,8 @@ newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarReta
 
 #write it
 newPrices.to_csv(path_or_buf = './new_prices.csv')
-print('new_prices.csv has been created in this file\'s directory!')
+
+if os.path.exists('./new_prices.csv') and os.path.getsize('./new_prices.csv') > 0:
+  print('new_prices.csv has been created in this program\'s directory!')
+else:
+  print('ERROR: new_prices.csv was not written correctly!')
