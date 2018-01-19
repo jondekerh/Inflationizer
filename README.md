@@ -6,3 +6,5 @@ Previously one would have to do all price checks by hand, referencing prices lis
 This program saves hours upon hours of tedius work and ensures prices can easily be kept current.
 
 Cheers!
+
+NOTE: This program requires Python 3.6.3 installed locally in order to run. If Python isn't installed on your system you can get it [here](https://www.python.org/downloads/release/python-363/). Once it's installed you'll also need to use pip to install required libraries. When testing on my computer just running `pip install pandas` seemed to install all required libraries. 
