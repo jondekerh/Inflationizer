@@ -29,9 +29,10 @@ for i in catList:
 importInv = pd.read_csv(invPrompt)
 inv = importInv[['SKU', 'Retail']]
 
-#make a new dataframe with 3 columns: SKU, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail
-newPrices = pd.merge(inv, finalCat, left_on='SKU', right_on='Item').drop('Item', axis=1)
+#make a new dataframe with 3 columns: SKU, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail and reset the indexing
+newPrices = pd.merge(inv, finalCat, left_on = 'SKU', right_on = 'Item').drop('Item', axis = 1)
 newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarRetail'].astype(float)]
+newPrices = newPrices.reset_index(drop = True)
 
 #write it
 newPrices.to_csv(path_or_buf = './new_prices.csv')
