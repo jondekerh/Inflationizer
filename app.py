@@ -4,14 +4,14 @@ import tkinter as tk
 import os 
 from tkinter import filedialog
 
-#using prompts, make user select proper files
+#using prompts, make user selects proper files
 root = tk.Tk()
 root.withdraw()
 
-catPrompt = filedialog.askopenfilenames(title = 'choose ALL catalog files')
+catPrompt = filedialog.askopenfilenames(title = 'Use SHIFT or CTRL click to select ALL catalog files')
 catList = list(catPrompt)
 
-invPrompt = filedialog.askopenfilename(title = 'now select the inventory file')
+invPrompt = filedialog.askopenfilename(title = 'Now select the inventory file')
 
 #create a blank dataframe with appropriate column names to store data from all the catalog files
 finalCat = pd.DataFrame(columns = ['Item', 'VarRetail'])
