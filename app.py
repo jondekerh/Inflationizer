@@ -3,6 +3,7 @@ import numpy as np
 import tkinter as tk
 import os 
 from tkinter import filedialog
+from tkinter import messagebox
 
 #using prompts, make user selects proper files
 root = tk.Tk()
@@ -27,11 +28,22 @@ for i in catList:
 
 #set up the inventory dataframe
 importInv = pd.read_csv(invPrompt)
-inv = importInv[['SKU', 'Retail']]
+inv = importInv[['SKU', 'Description', 'Retail']]
 
-#make a new dataframe with 3 columns: SKU, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail and reset the indexing
+#make a new dataframe with 4 columns: SKU, , Description, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail
 newPrices = pd.merge(inv, finalCat, left_on = 'SKU', right_on = 'Item').drop('Item', axis = 1)
 newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarRetail'].astype(float)]
+
+#if price makrup is higher than 5 times the original price, create a prompt asking the user if they want to ignore that row or not
+for i, row in newPrices.iterrows():
+  if (float(row['VarRetail']) > float(row['Retail']) * 5):
+    result = messagebox.askquestion('BULK ITEM FLAG', row['Description'] + ' (SKU:' + str(row['SKU']) + ') is currently ' +  str(row['Retail']) + ' and will be changed to ' + str(row['VarRetail']) + '. Extremely steep changes like this could result from pricing items individually or by-the-foot while the catalog uses the box price. Would you like to ignore this item?')
+    if result == 'yes':
+      newPrices = newPrices.drop([i])
+    else:
+      print ('Keeping ' + str(row['SKU']) + '...')
+
+#reset indexes
 newPrices = newPrices.reset_index(drop = True)
 
 #write it
