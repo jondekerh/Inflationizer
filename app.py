@@ -40,6 +40,7 @@ for i, row in newPrices.iterrows():
     result = messagebox.askquestion('BULK ITEM FLAG', row['Description'] + ' (SKU:' + str(row['SKU']) + ') is currently ' +  str(row['Retail']) + ' and will be changed to ' + str(row['VarRetail']) + '. Extremely steep changes like this could result from pricing items individually or by-the-foot while the catalog uses the box price. Would you like to ignore this item?')
     if result == 'yes':
       newPrices = newPrices.drop([i])
+      print ('Removing ' + str(row['SKU']) + '...')
     else:
       print ('Keeping ' + str(row['SKU']) + '...')
 
