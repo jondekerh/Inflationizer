@@ -4,6 +4,7 @@ import tkinter as tk
 import os 
 from tkinter import filedialog
 from tkinter import messagebox
+import datetime
 
 #using prompts, make user selects proper files
 root = tk.Tk()
@@ -22,35 +23,40 @@ for i in catList:
   importCat = pd.read_csv(i)
   cat = importCat[['Item', 'Retail']]
   cat.columns = ['Item', 'VarRetail']
-  cat['Item'] = cat['Item'].str.replace('-','')
+  cat['Item'] = cat['Item'].str.replace('-', '')
   finalCat = finalCat.append(cat)
   print(i + ' appended successfully!')
 
-#set up the inventory dataframe
-importInv = pd.read_csv(invPrompt)
-inv = importInv[['SKU', 'Description', 'Retail']]
-
-#make a new dataframe with 4 columns: SKU, , Description, Retail, and VarRetail. Then remake it with only rows where Retail < VarRetail
+#set up the inventory dataframe with dates as timestamps and drop rows where the last sale happened more than a few years ago
+importInv = pd.read_csv(invPrompt, parse_dates = ['Date Last Sale'])
+inv = importInv[['SKU', 'Description', 'Retail', 'Date Last Sale', 'Stk U/M', 'Pur U/M']]
+inv = inv.dropna(subset = ['Date Last Sale'])    #drop all rows where date data is NaN/blank
+for i, row in inv.iterrows():
+  if (row['Date Last Sale'].year <= 2015):
+    inv = inv.drop([i])
+    
+#merge the two dataframes and drop the Item column. Then remake it with only rows where Retail < VarRetail
 newPrices = pd.merge(inv, finalCat, left_on = 'SKU', right_on = 'Item').drop('Item', axis = 1)
 newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarRetail'].astype(float)]
 
-#if price makrup is higher than 5 times the original price, create a prompt asking the user if they want to ignore that row or not
+#if Stk U/M and Pur U/M are not equal (designating a significant difference in cat price and inv price) append that row to newPricesBulk and drop it from newPrices
+newPricesBulk = pd.DataFrame(columns = ['SKU', 'Description', 'Retail', 'VarRetail', 'Stk U/M', 'Pur U/M'])
+
 for i, row in newPrices.iterrows():
-  if (float(row['VarRetail']) > float(row['Retail']) * 5):
-    result = messagebox.askquestion('BULK ITEM FLAG', row['Description'] + ' (SKU:' + str(row['SKU']) + ') is currently ' +  str(row['Retail']) + ' and will be changed to ' + str(row['VarRetail']) + '. Extremely steep changes like this could result from pricing items individually or by-the-foot while the catalog uses the box price. Would you like to ignore this item?')
-    if result == 'yes':
-      newPrices = newPrices.drop([i])
-      print ('Removing ' + str(row['SKU']) + '...')
-    else:
-      print ('Keeping ' + str(row['SKU']) + '...')
+  if (row['Stk U/M'] != row['Pur U/M']):
+    newPricesBulk = newPricesBulk.append(row)
+    newPrices = newPrices.drop([i])
 
 #reset indexes
 newPrices = newPrices.reset_index(drop = True)
+newPricesBulk = newPricesBulk.reset_index(drop = True)
 
-#write it
+#write files
 newPrices.to_csv(path_or_buf = './new_prices.csv')
+newPricesBulk.to_csv(path_or_buf = './new_prices_bulk.csv')
 
 if os.path.exists('./new_prices.csv') and os.path.getsize('./new_prices.csv') > 0:
   print('new_prices.csv has been created in this program\'s directory!')
-else:
-  print('ERROR: new_prices.csv was not written correctly!')
+
+if os.path.exists('./new_prices_bulk.csv') and os.path.getsize('./new_prices_bulk.csv') > 0:
+  print('new_prices_bulk.csv has been created in this program\'s directory!')
