@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import tkinter as tk
-import os 
+import os
 from tkinter import filedialog
 from tkinter import messagebox
 
@@ -17,14 +17,14 @@ invPrompt = filedialog.askopenfilename(title = 'Now select the inventory file')
 
 
 #create a blank dataframe to store data from all the catalog files
-finalCat = pd.DataFrame(columns = ['Item', 'VarRetail', 'Retail Dept'])
+finalCat = pd.DataFrame(columns = ['Item', 'Variable Retail', 'Retail Dept'])
 
 
 #loop to append shortened contents of each selected catalog file into one dataframe (finalCat)
 for i in catList:
   importCat = pd.read_csv(i)
   cat = importCat[['Item', 'Retail', 'Retail Dept']]
-  cat.columns = ['Item', 'VarRetail', 'Retail Dept']
+  cat.columns = ['Item', 'Variable Retail', 'Retail Dept']
   cat['Item'] = cat['Item'].str.replace('-', '')
   finalCat = finalCat.append(cat)
 
@@ -43,28 +43,28 @@ for i, row in inv.iterrows():
 
 #drop the date column as it is no longer needed
 inv = inv.drop(['Date Last Sale'], axis = 1)
-   
 
-#merge the two dataframes as newPrices and drop the Item column 
+
+#merge the two dataframes as newPrices and drop the Item column
 newPrices = pd.merge(inv, finalCat, left_on = 'SKU', right_on = 'Item').drop('Item', axis = 1)
 
-#drop any rows where Retail < VarRetail
-newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['VarRetail'].astype(float)]
+#drop any rows where Retail < Variable Retail
+newPrices = newPrices.loc[newPrices['Retail'].astype(float) < newPrices['Variable Retail'].astype(float)]
 
 #create a blank dataframe to store any bulk prices removed from newPrices
-newPricesBulk = pd.DataFrame(columns = ['SKU', 'Description', 'Retail', 'VarRetail', 'Retail Dept'])
+newPricesBulk = pd.DataFrame(columns = ['SKU', 'Description', 'Retail', 'Variable Retail', 'Retail Dept'])
 
 
 #order newPrices by the Dept #, and within that by Fineline #
-newPrices = newPrices.sort_values(by = ['Retail Dept', 'Fineline #']) 
+newPrices = newPrices.sort_values(by = ['Retail Dept', 'Fineline #'])
 
 #drop Fineline # as it is no longer needed
 newPrices = newPrices.drop(['Fineline #'], axis = 1)
 
 
-#if VarRetail is greater than 5 times Retail (designating an item bought as a pack but sold invidually) append that row to newPricesBulk and drop it from newPrices
+#if Variable Retail is greater than 5 times Retail (designating an item bought as a pack but sold invidually) append that row to newPricesBulk and drop it from newPrices
 for i, row in newPrices.iterrows():
-  if (float(row['VarRetail']) > float(row['Retail']) * 5):
+  if (float(row['Variable Retail']) > float(row['Retail']) * 5):
     newPricesBulk = newPricesBulk.append(row)
     newPrices = newPrices.drop([i])
 
