@@ -20,18 +20,30 @@ invPrompt = filedialog.askopenfilename(title = 'Now select the inventory file')
 finalCat = pd.DataFrame(columns = ['Item', 'Variable Retail', 'Retail Dept'])
 
 
-#loop to append shortened contents of each selected catalog file into one dataframe (finalCat)
-for i in catList:
-  importCat = pd.read_csv(i)
-  cat = importCat[['Item', 'Retail', 'Retail Dept']]
-  cat.columns = ['Item', 'Variable Retail', 'Retail Dept']
-  cat['Item'] = cat['Item'].str.replace('-', '')
-  finalCat = finalCat.append(cat)
+def makeCatalog():
+  #loop to append shortened contents of each selected catalog file into one dataframe (finalCat)
+  for i in catList:
+    global finalCat
+    importCat = pd.read_csv(i)
+    cat = importCat[['Item', 'Retail', 'Retail Dept']]
+    cat.columns = ['Item', 'Variable Retail', 'Retail Dept']
+    cat['Item'] = cat['Item'].str.replace('-', '')
+    finalCat = finalCat.append(cat)
+
+makeCatalog()
 
 
-#set up the inventory dataframe
-importInv = pd.read_csv(invPrompt, parse_dates = ['Date Last Sale'])
-inv = importInv[['SKU', 'Description', 'Retail', 'Date Last Sale', 'Fineline #']]
+#crete a blank dataframe to store inventory data
+inv = pd.DataFrame(columns = ['SKU', 'Description', 'Retail', 'Date Last Sale', 'Fineline #'])
+
+def makeInventory():
+  #add data to the inventory dataframe
+  global inv
+  importInv = pd.read_csv(invPrompt, parse_dates = ['Date Last Sale'])
+  inv = importInv[['SKU', 'Description', 'Retail', 'Date Last Sale', 'Fineline #']]
+
+makeInventory()
+
 
 #drop all rows where Date Last Sale data is NaN/blank (meaning either the item is too old or too new to worry about)
 inv = inv.dropna(subset = ['Date Last Sale'])
