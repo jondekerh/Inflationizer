@@ -53,9 +53,6 @@ for i, row in inv.iterrows():
   if (row['Date Last Sale'].year <= 2015):
     inv = inv.drop([i])
 
-#drop the date column as it is no longer needed
-inv = inv.drop(['Date Last Sale'], axis = 1)
-
 
 #merge the two dataframes as newPrices and drop the Item column
 newPrices = pd.merge(inv, finalCat, left_on = 'SKU', right_on = 'Item').drop('Item', axis = 1)
@@ -70,8 +67,18 @@ newPricesBulk = pd.DataFrame(columns = ['SKU', 'Description', 'Retail', 'Variabl
 #order newPrices by the Dept #, and within that by Fineline #
 newPrices = newPrices.sort_values(by = ['Retail Dept', 'Fineline #'])
 
-#drop Fineline # as it is no longer needed
-newPrices = newPrices.drop(['Fineline #'], axis = 1)
+#create a new dataframe and order it by Date Last Sale and within that by Fineline #
+newPricesDate = newPrices.sort_values(by = ['Date Last Sale', 'Fineline #'], ascending = False)
+
+
+#drop Date Last Sale and Fineline # in newPrices as it is no longer needed
+newPrices = newPrices.drop(['Date Last Sale', 'Fineline #'], axis = 1)
+
+#drop Fineline # and Retail Dept in newPricesDate for same reason
+newPricesDate = newPricesDate.drop(['Fineline #', 'Retail Dept'], axis = 1)
+
+#make the Date Last Sale column the left-most column for readability
+newPricesDate = newPricesDate.set_index('Date Last Sale')
 
 
 #if Variable Retail is greater than 5 times Retail (designating an item bought as a pack but sold invidually) append that row to newPricesBulk and drop it from newPrices
@@ -82,11 +89,15 @@ for i, row in newPrices.iterrows():
 
 
 #write files
-newPrices.to_csv(path_or_buf = './new_prices.csv', index = False)
-newPricesBulk.to_csv(path_or_buf = './new_prices_bulk.csv', index = False)
+newPrices.to_csv(path_or_buf = './new-prices.csv', index = False)
+newPricesDate.to_csv(path_or_buf = './new-prices-by-priority.csv', index = True)
+newPricesBulk.to_csv(path_or_buf = './new-prices-bulk.csv', index = False)
 
-if os.path.exists('./new_prices.csv') and os.path.getsize('./new_prices.csv') > 0:
-  print('new_prices.csv has been created in this program\'s directory!')
+if os.path.exists('./new-prices.csv') and os.path.getsize('./new-prices.csv') > 0:
+  print('new-prices.csv has been created in this program\'s directory!')
 
-if os.path.exists('./new_prices_bulk.csv') and os.path.getsize('./new_prices_bulk.csv') > 0:
-  print('new_prices_bulk.csv has been created in this program\'s directory!')
+if os.path.exists('./new-prices-bulk.csv') and os.path.getsize('./new-prices-bulk.csv') > 0:
+  print('new-prices-bulk.csv has been created in this program\'s directory!')
+
+if os.path.exists('./new-prices-by-priority.csv') and os.path.getsize('./new-prices-by-priority.csv') > 0:
+  print('new-prices-by-priority.csv has been created in this program\'s directory!')
